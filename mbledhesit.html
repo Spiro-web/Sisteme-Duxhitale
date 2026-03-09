@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mbledhësit — Pajisje Kombinatore</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --panel: #111827;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff14;
+    --text: #c9d8e8;
+    --dim: #4a6080;
+    --high: #ffffff;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, #001a3340 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, #001a3320 0%, transparent 50%);
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+    background: linear-gradient(180deg, #0d1524 0%, transparent 100%);
+  }
+
+  .header-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.25rem 0.6rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(1.3rem, 3vw, 1.9rem);
+    font-weight: 600;
+    color: var(--high);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 0.35rem;
+    font-style: italic;
+  }
+
+  /* Tab Navigation */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    overflow-x: auto;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    padding: 0.9rem 1.5rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--dim);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: #0a1628; }
+
+  /* Content */
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-title::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* Truth Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+
+  th {
+    background: #0d1a2d;
+    color: var(--accent);
+    padding: 0.6rem 1rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+
+  td {
+    padding: 0.55rem 1rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    color: var(--text);
+    transition: background 0.15s;
+  }
+
+  tr:hover td { background: #0d1a2d; }
+
+  td.one { color: var(--accent3); font-weight: 600; }
+  td.zero { color: var(--dim); }
+  td.result { color: var(--accent2); font-weight: 600; }
+  td.carry { color: var(--accent); font-weight: 600; }
+
+  /* SVG Circuit Diagrams */
+  .circuit-wrap {
+    background: #070d18;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  svg text { font-family: var(--mono); }
+
+  /* Signal legend */
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    font-family: var(--mono);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--dim);
+  }
+
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Interactive Simulator */
+  .sim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 600px) { .sim-grid { grid-template-columns: 1fr; } }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .bit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .bit-label {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    min-width: 50px;
+  }
+
+  .toggle-btn {
+    width: 52px;
+    height: 28px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    background: #0a1628;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn.on {
+    border-color: var(--accent3);
+    background: #0a1f0a;
+  }
+
+  .toggle-btn::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--dim);
+    top: 2px;
+    left: 2px;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn.on::after {
+    left: 26px;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+  }
+
+  .bit-val {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .output-display {
+    background: #070d18;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem;
+  }
+
+  .output-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1a2540;
+  }
+
+  .output-row:last-child { border-bottom: none; }
+
+  .out-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  .out-val {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .out-val.active { color: var(--accent3); text-shadow: 0 0 10px var(--accent3); }
+  .out-val.inactive { color: var(--dim); }
+
+  /* 4-bit adder */
+  .four-bit-inputs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .nibble-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nibble-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .nibble-bits {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .mini-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: #0a1628;
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mini-toggle.on {
+    border-color: var(--accent3);
+    background: #0a1f0a;
+    color: var(--accent3);
+    box-shadow: 0 0 6px #39ff1440;
+  }
+
+  .result-display {
+    text-align: center;
+    padding: 1.5rem;
+    background: #070d18;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .result-equation {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    color: var(--high);
+    letter-spacing: 0.05em;
+  }
+
+  .result-equation .num { color: var(--accent2); }
+  .result-equation .eq { color: var(--dim); }
+  .result-equation .res { color: var(--accent3); }
+
+  .overflow-badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    background: #3a0a0a;
+    border: 1px solid #ff4444;
+    color: #ff6666;
+    letter-spacing: 0.1em;
+  }
+
+  /* Formula box */
+  .formula {
+    background: #070d18;
+    border-left: 3px solid var(--accent2);
+    padding: 1rem 1.25rem;
+    border-radius: 0 6px 6px 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    margin: 1rem 0;
+    line-height: 1.8;
+  }
+
+  .formula .var { color: var(--accent); }
+  .formula .op { color: var(--accent2); }
+  .formula .comment { color: var(--dim); font-size: 0.75rem; }
+
+  /* Two col layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 650px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Highlight row on hover in sim */
+  .highlight-row {
+    background: #0d1f35;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    margin-top: 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .pin-diagram {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-badge">Sisteme Dixhitale</div>
+    <h1>Mbledhësit <span>//</span> Adders</h1>
+    <p class="subtitle">Pajisje Kombinatore — Half-Adder, Full-Adder, 4-bit Paralel</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" onclick="showTab('teoria')">01 / Teoria</button>
+  <button class="tab" onclick="showTab('half')">02 / Half-Adder</button>
+  <button class="tab" onclick="showTab('full')">03 / Full-Adder</button>
+  <button class="tab" onclick="showTab('fourbit')">04 / 4-bit Paralel</button>
+  <button class="tab" onclick="showTab('simulator')">05 / Simulator</button>
+</nav>
+
+<!-- ===== TAB 1: TEORIA ===== -->
+<div id="teoria" class="section active content">
+
+  <div class="card">
+    <div class="card-title">Ç'janë Mbledhësit?</div>
+    <p style="line-height:1.8; font-size:0.9rem; color:var(--text)">
+      <strong style="color:var(--high)">Mbledhësi (Adder)</strong> është një qark logjik kombinatorial që kryen mbledhjen aritmetike të bitave binare.
+      Ai është blloku themelor i njësisë aritmetiko-logjike (ALU) në çdo procesor.
+    </p>
+    <div class="formula">
+      <span class="comment">// Llojet kryesore:</span><br>
+      <span class="var">Half-Adder  </span><span class="op">=</span> Mbledh 2 bita hyrëse (pa bartje hyrëse)<br>
+      <span class="var">Full-Adder  </span><span class="op">=</span> Mbledh 3 bita (me bartje hyrëse C<sub>in</sub>)<br>
+      <span class="var">4-bit Adder </span><span class="op">=</span> 4× Full-Adder të lidhur në seri (ripple carry)
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Simbolet e Portave</div>
+      <svg width="100%" viewBox="0 0 280 200" style="max-height:200px">
+        <!-- XOR gate -->
+        <g transform="translate(20,20)">
+          <text x="0" y="14" fill="#4a6080" font-size="9" font-family="IBM Plex Mono">XOR</text>
+          <path d="M40,30 Q55,20 70,30 Q55,40 40,30Z" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+          <path d="M35,25 Q50,35 35,45" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+          <line x1="20" y1="27" x2="37" y2="27" stroke="#00d4ff" stroke-width="1.2"/>
+          <line x1="20" y1="43" x2="37" y2="43" stroke="#00d4ff" stroke-width="1.2"/>
+          <line x1="70" y1="35" x2="90" y2="35" stroke="#39ff14" stroke-width="1.2"/>
+          <text x="0" y="27" fill="#c9d8e8" font-size="8">A</text>
+          <text x="0" y="47" fill="#c9d8e8" font-size="8">B</text>
+          <text x="92" y="38" fill="#39ff14" font-size="8">S</text>
+          <text x="25" y="70" fill="#4a6080" font-size="8">Shuma (XOR)</text>
+        </g>
+        <!-- AND gate -->
+        <g transform="translate(160,20)">
+          <text x="0" y="14" fill="#4a6080" font-size="9" font-family="IBM Plex Mono">AND</text>
+          <path d="M40,25 L55,25 Q70,25 70,35 Q70,45 55,45 L40,45Z" fill="none" stroke="#ff6b35" stroke-width="1.5"/>
+          <line x1="20" y1="30" x2="40" y2="30" stroke="#ff6b35" stroke-width="1.2"/>
+          <line x1="20" y1="40" x2="40" y2="40" stroke="#ff6b35" stroke-width="1.2"/>
+          <line x1="70" y1="35" x2="90" y2="35" stroke="#39ff14" stroke-width="1.2"/>
+          <text x="0" y="32" fill="#c9d8e8" font-size="8">A</text>
+          <text x="0" y="44" fill="#c9d8e8" font-size="8">B</text>
+          <text x="92" y="38" fill="#39ff14" font-size="8">C</text>
+          <text x="20" y="70" fill="#4a6080" font-size="8">Bartja (AND)</text>
+        </g>
+        <!-- OR gate -->
+        <g transform="translate(20,110)">
+          <text x="0" y="14" fill="#4a6080" font-size="9" font-family="IBM Plex Mono">OR</text>
+          <path d="M40,25 Q55,25 70,35 Q55,45 40,45 Q50,35 40,25Z" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+          <line x1="20" y1="30" x2="42" y2="30" stroke="#a78bfa" stroke-width="1.2"/>
+          <line x1="20" y1="40" x2="42" y2="40" stroke="#a78bfa" stroke-width="1.2"/>
+          <line x1="70" y1="35" x2="90" y2="35" stroke="#39ff14" stroke-width="1.2"/>
+          <text x="0" y="32" fill="#c9d8e8" font-size="8">A</text>
+          <text x="0" y="44" fill="#c9d8e8" font-size="8">B</text>
+          <text x="92" y="38" fill="#39ff14" font-size="8">Out</text>
+        </g>
+        <!-- NOT gate -->
+        <g transform="translate(160,110)">
+          <text x="0" y="14" fill="#4a6080" font-size="9" font-family="IBM Plex Mono">NOT</text>
+          <polygon points="40,25 70,35 40,45" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+          <circle cx="73" cy="35" r="3" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+          <line x1="20" y1="35" x2="40" y2="35" stroke="#fbbf24" stroke-width="1.2"/>
+          <line x1="76" y1="35" x2="90" y2="35" stroke="#39ff14" stroke-width="1.2"/>
+          <text x="0" y="38" fill="#c9d8e8" font-size="8">A</text>
+          <text x="92" y="38" fill="#39ff14" font-size="8">Ā</text>
+        </g>
+      </svg>
+    </div>
+    <div class="card">
+      <div class="card-title">Hyrje / Dalje</div>
+      <table>
+        <tr><th>Pajisja</th><th>Hyrje</th><th>Dalje</th></tr>
+        <tr><td>Half-Adder</td><td class="one">A, B</td><td class="result">S, C</td></tr>
+        <tr><td>Full-Adder</td><td class="one">A, B, Cin</td><td class="result">S, Cout</td></tr>
+        <tr><td>4-bit Adder</td><td class="one">A[3:0], B[3:0]</td><td class="result">S[3:0], Cout</td></tr>
+      </table>
+      <div class="formula" style="margin-top:1rem; font-size:0.78rem">
+        <span class="var">S     </span><span class="op">=</span> Shuma (Sum)<br>
+        <span class="var">C/Cout</span><span class="op">=</span> Bartja dalëse (Carry-out)<br>
+        <span class="var">Cin   </span><span class="op">=</span> Bartja hyrëse (Carry-in)
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== TAB 2: HALF ADDER ===== -->
+<div id="half" class="section content">
+
+  <div class="card">
+    <div class="card-title">Half-Adder — Mbledhësi i Thjeshtë</div>
+    <p style="font-size:0.88rem; color:var(--text); line-height:1.7; margin-bottom:1rem">
+      Half-Adder mbledh <strong style="color:var(--accent)">dy bita</strong> hyrëse (A dhe B) dhe prodhon
+      <strong style="color:var(--accent2)">Shumën (S)</strong> dhe <strong style="color:var(--accent)">Bartjen (C)</strong>.
+      Nuk ka bartje hyrëse — prandaj quhet "gjysëm mbledhës".
+    </p>
+
+    <div class="formula">
+      <span class="comment">// Shprehjet Boolean:</span><br>
+      <span class="var">S </span><span class="op">= A ⊕ B</span>&nbsp;&nbsp;&nbsp;<span class="comment">// XOR — Shuma</span><br>
+      <span class="var">C </span><span class="op">= A · B</span>&nbsp;&nbsp;&nbsp;<span class="comment">// AND — Bartja</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Tabela e Vërtetësisë</div>
+      <table>
+        <tr><th>A</th><th>B</th><th>S = A⊕B</th><th>C = A·B</th></tr>
+        <tr><td class="zero">0</td><td class="zero">0</td><td class="result">0</td><td class="carry">0</td></tr>
+        <tr><td class="zero">0</td><td class="one">1</td><td class="result">1</td><td class="carry">0</td></tr>
+        <tr><td class="one">1</td><td class="zero">0</td><td class="result">1</td><td class="carry">0</td></tr>
+        <tr><td class="one">1</td><td class="one">1</td><td class="result">0</td><td class="carry">1</td></tr>
+      </table>
+      <div style="margin-top:0.75rem; font-size:0.75rem; color:var(--dim); font-family:var(--mono)">
+        ⟹ 1+1 = 10₂ (Shuma=0, Bartje=1)
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Qark Logjik</div>
+      <div class="circuit-wrap">
+        <svg width="100%" viewBox="0 0 320 180">
+          <!-- Wires input A -->
+          <line x1="20" y1="60" x2="100" y2="60" stroke="#00d4ff" stroke-width="1.5"/>
+          <line x1="20" y1="60" x2="20" y2="130" stroke="#00d4ff" stroke-width="1.5"/>
+          <line x1="20" y1="130" x2="100" y2="130" stroke="#00d4ff" stroke-width="1.5"/>
+          <!-- Wires input B -->
+          <line x1="50" y1="80" x2="50" y2="140" stroke="#ff6b35" stroke-width="1.5"/>
+          <line x1="50" y1="80" x2="100" y2="80" stroke="#ff6b35" stroke-width="1.5"/>
+          <line x1="50" y1="140" x2="100" y2="140" stroke="#ff6b35" stroke-width="1.5"/>
+
+          <!-- XOR gate -->
+          <path d="M100,50 Q115,60 130,70 Q115,80 100,70 Q110,60 100,50Z" fill="#001a33" stroke="#00d4ff" stroke-width="1.8"/>
+          <path d="M95,52 Q108,62 95,72" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+          <text x="107" y="67" fill="#00d4ff" font-size="9" font-weight="600">XOR</text>
+          <line x1="130" y1="60" x2="200" y2="60" stroke="#39ff14" stroke-width="1.8"/>
+
+          <!-- AND gate -->
+          <path d="M100,120 L115,120 Q132,120 132,135 Q132,150 115,150 L100,150Z" fill="#001a33" stroke="#ff6b35" stroke-width="1.8"/>
+          <text x="106" y="140" fill="#ff6b35" font-size="9" font-weight="600">AND</text>
+          <line x1="132" y1="135" x2="200" y2="135" stroke="#39ff14" stroke-width="1.8"/>
+
+          <!-- Labels -->
+          <text x="5" y="55" fill="#00d4ff" font-size="12" font-weight="600">A</text>
+          <text x="35" y="75" fill="#ff6b35" font-size="12" font-weight="600">B</text>
+          <text x="205" y="64" fill="#39ff14" font-size="12" font-weight="600">S</text>
+          <text x="205" y="139" fill="#39ff14" font-size="12" font-weight="600">C</text>
+
+          <!-- Dots junction -->
+          <circle cx="20" cy="60" r="4" fill="#00d4ff"/>
+          <circle cx="50" cy="80" r="4" fill="#ff6b35"/>
+        </svg>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="dot" style="background:#00d4ff"></div> Hyrje A</div>
+        <div class="legend-item"><div class="dot" style="background:#ff6b35"></div> Hyrje B</div>
+        <div class="legend-item"><div class="dot" style="background:#39ff14"></div> Daljet S, C</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: FULL ADDER ===== -->
+<div id="full" class="section content">
+
+  <div class="card">
+    <div class="card-title">Full-Adder — Mbledhësi i Plotë</div>
+    <p style="font-size:0.88rem; color:var(--text); line-height:1.7; margin-bottom:1rem">
+      Full-Adder mbledh <strong style="color:var(--accent)">tre bita</strong>: A, B dhe bartjen hyrëse <strong style="color:var(--accent)">C<sub>in</sub></strong>.
+      Ndërtohet nga <strong>dy Half-Adder + një portë OR</strong>.
+    </p>
+    <div class="formula">
+      <span class="comment">// Shprehjet Boolean:</span><br>
+      <span class="var">S    </span><span class="op">= A ⊕ B ⊕ Cin</span><br>
+      <span class="var">Cout </span><span class="op">= (A · B) + (Cin · (A ⊕ B))</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Tabela e Vërtetësisë</div>
+      <table>
+        <tr><th>A</th><th>B</th><th>Cin</th><th>S</th><th>Cout</th></tr>
+        <tr><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="result">0</td><td class="carry">0</td></tr>
+        <tr><td class="zero">0</td><td class="zero">0</td><td class="one">1</td><td class="result">1</td><td class="carry">0</td></tr>
+        <tr><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td class="result">1</td><td class="carry">0</td></tr>
+        <tr><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="result">0</td><td class="carry">1</td></tr>
+        <tr><td class="one">1</td><td class="zero">0</td><td class="zero">0</td><td class="result">1</td><td class="carry">0</td></tr>
+        <tr><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td class="result">0</td><td class="carry">1</td></tr>
+        <tr><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="result">0</td><td class="carry">1</td></tr>
+        <tr><td class="one">1</td><td class="one">1</td><td class="one">1</td><td class="result">1</td><td class="carry">1</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Qark Logjik (2× HA + OR)</div>
+      <div class="circuit-wrap">
+        <svg width="100%" viewBox="0 0 340 220">
+          <!-- HA1 block -->
+          <rect x="70" y="40" width="70" height="50" rx="4" fill="#001833" stroke="#00d4ff" stroke-width="1.5"/>
+          <text x="105" y="62" fill="#00d4ff" font-size="9" text-anchor="middle" font-weight="600">Half</text>
+          <text x="105" y="74" fill="#00d4ff" font-size="9" text-anchor="middle" font-weight="600">Adder 1</text>
+          <!-- HA2 block -->
+          <rect x="180" y="80" width="70" height="50" rx="4" fill="#001a10" stroke="#39ff14" stroke-width="1.5"/>
+          <text x="215" y="102" fill="#39ff14" font-size="9" text-anchor="middle" font-weight="600">Half</text>
+          <text x="215" y="114" fill="#39ff14" font-size="9" text-anchor="middle" font-weight="600">Adder 2</text>
+          <!-- OR gate -->
+          <path d="M270,130 Q283,140 296,148 Q283,156 270,148 Q278,140 270,130Z" fill="#0a0010" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="278" y="144" fill="#a78bfa" font-size="7" text-anchor="middle">OR</text>
+
+          <!-- Input A -->
+          <line x1="10" y1="55" x2="70" y2="55" stroke="#00d4ff" stroke-width="1.5"/>
+          <text x="3" y="59" fill="#00d4ff" font-size="11" font-weight="600">A</text>
+          <!-- Input B -->
+          <line x1="10" y1="80" x2="70" y2="80" stroke="#ff6b35" stroke-width="1.5"/>
+          <text x="3" y="84" fill="#ff6b35" font-size="11" font-weight="600">B</text>
+          <!-- Input Cin -->
+          <line x1="10" y1="165" x2="180" y2="165" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="3" y="169" fill="#a78bfa" font-size="9" font-weight="600">Cin</text>
+
+          <!-- HA1 S out → HA2 A in -->
+          <line x1="140" y1="58" x2="180" y2="95" stroke="#c9d8e8" stroke-width="1.2"/>
+          <!-- HA1 C out → OR -->
+          <line x1="140" y1="75" x2="265" y2="135" stroke="#ff6b35" stroke-width="1.2"/>
+          <!-- HA2 S out = S final -->
+          <line x1="250" y1="100" x2="320" y2="100" stroke="#39ff14" stroke-width="1.8"/>
+          <text x="322" y="104" fill="#39ff14" font-size="12" font-weight="600">S</text>
+          <!-- Cin → HA2 B -->
+          <line x1="180" y1="165" x2="180" y2="120" stroke="#a78bfa" stroke-width="1.2"/>
+          <!-- HA2 C out → OR -->
+          <line x1="250" y1="115" x2="265" y2="145" stroke="#39ff14" stroke-width="1.2"/>
+          <!-- OR → Cout -->
+          <line x1="296" y1="140" x2="320" y2="140" stroke="#39ff14" stroke-width="1.8"/>
+          <text x="322" y="144" fill="#39ff14" font-size="10" font-weight="600">Cout</text>
+
+          <!-- Labels in HA -->
+          <text x="68" y="59" fill="#4a6080" font-size="7">A→</text>
+          <text x="68" y="83" fill="#4a6080" font-size="7">B→</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: 4-BIT ADDER ===== -->
+<div id="fourbit" class="section content">
+
+  <div class="card">
+    <div class="card-title">4-bit Ripple Carry Adder</div>
+    <p style="font-size:0.88rem; color:var(--text); line-height:1.7; margin-bottom:1rem">
+      Katër Full-Adder të lidhur në <strong style="color:var(--accent)">seri (zinxhir)</strong>.
+      Bartja C<sub>out</sub> e çdo stadeje bëhet C<sub>in</sub> i stades tjetër.
+      Mund të mbledhë numra deri në <strong style="color:var(--accent2)">15 + 15 = 30</strong> (4-bit).
+    </p>
+    <div class="formula">
+      <span class="comment">// Struktura:</span><br>
+      <span class="var">FA₀</span>: A₀+B₀+0    → S₀, C₀<br>
+      <span class="var">FA₁</span>: A₁+B₁+C₀  → S₁, C₁<br>
+      <span class="var">FA₂</span>: A₂+B₂+C₁  → S₂, C₂<br>
+      <span class="var">FA₃</span>: A₃+B₃+C₂  → S₃, <span class="op">Cout</span><span class="comment"> ← overflow!</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Diagrama e Bllokut — 4-bit Paralel</div>
+    <div class="circuit-wrap">
+      <svg width="100%" viewBox="0 0 680 160">
+        <!-- 4 FA blocks -->
+        <rect x="30" y="40" width="120" height="80" rx="5" fill="#001833" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="90" y="76" fill="#00d4ff" font-size="11" text-anchor="middle" font-weight="600">Full</text>
+        <text x="90" y="90" fill="#00d4ff" font-size="11" text-anchor="middle" font-weight="600">Adder 0</text>
+        <text x="90" y="108" fill="#4a6080" font-size="9" text-anchor="middle">(bit 0 — LSB)</text>
+
+        <rect x="190" y="40" width="120" height="80" rx="5" fill="#001a10" stroke="#39ff14" stroke-width="1.5"/>
+        <text x="250" y="76" fill="#39ff14" font-size="11" text-anchor="middle" font-weight="600">Full</text>
+        <text x="250" y="90" fill="#39ff14" font-size="11" text-anchor="middle" font-weight="600">Adder 1</text>
+        <text x="250" y="108" fill="#4a6080" font-size="9" text-anchor="middle">(bit 1)</text>
+
+        <rect x="350" y="40" width="120" height="80" rx="5" fill="#1a1000" stroke="#ff6b35" stroke-width="1.5"/>
+        <text x="410" y="76" fill="#ff6b35" font-size="11" text-anchor="middle" font-weight="600">Full</text>
+        <text x="410" y="90" fill="#ff6b35" font-size="11" text-anchor="middle" font-weight="600">Adder 2</text>
+        <text x="410" y="108" fill="#4a6080" font-size="9" text-anchor="middle">(bit 2)</text>
+
+        <rect x="510" y="40" width="120" height="80" rx="5" fill="#100018" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="570" y="76" fill="#a78bfa" font-size="11" text-anchor="middle" font-weight="600">Full</text>
+        <text x="570" y="90" fill="#a78bfa" font-size="11" text-anchor="middle" font-weight="600">Adder 3</text>
+        <text x="570" y="108" fill="#4a6080" font-size="9" text-anchor="middle">(bit 3 — MSB)</text>
+
+        <!-- Carry chain -->
+        <line x1="150" y1="70" x2="190" y2="70" stroke="#fbbf24" stroke-width="2"/>
+        <line x1="310" y1="70" x2="350" y2="70" stroke="#fbbf24" stroke-width="2"/>
+        <line x1="470" y1="70" x2="510" y2="70" stroke="#fbbf24" stroke-width="2"/>
+        <text x="162" y="66" fill="#fbbf24" font-size="8">C₀</text>
+        <text x="322" y="66" fill="#fbbf24" font-size="8">C₁</text>
+        <text x="482" y="66" fill="#fbbf24" font-size="8">C₂</text>
+
+        <!-- Cin0 = 0 -->
+        <line x1="0" y1="70" x2="30" y2="70" stroke="#4a6080" stroke-width="1.5"/>
+        <text x="2" y="67" fill="#4a6080" font-size="9">0</text>
+
+        <!-- Cout = overflow -->
+        <line x1="630" y1="70" x2="660" y2="70" stroke="#ff4444" stroke-width="2"/>
+        <text x="636" y="66" fill="#ff4444" font-size="8">Cout</text>
+
+        <!-- S outputs down -->
+        <line x1="90" y1="120" x2="90" y2="145" stroke="#c9d8e8" stroke-width="1.5"/>
+        <line x1="250" y1="120" x2="250" y2="145" stroke="#c9d8e8" stroke-width="1.5"/>
+        <line x1="410" y1="120" x2="410" y2="145" stroke="#c9d8e8" stroke-width="1.5"/>
+        <line x1="570" y1="120" x2="570" y2="145" stroke="#c9d8e8" stroke-width="1.5"/>
+        <text x="87" y="158" fill="#c9d8e8" font-size="10" font-weight="600">S₀</text>
+        <text x="247" y="158" fill="#c9d8e8" font-size="10" font-weight="600">S₁</text>
+        <text x="407" y="158" fill="#c9d8e8" font-size="10" font-weight="600">S₂</text>
+        <text x="567" y="158" fill="#c9d8e8" font-size="10" font-weight="600">S₃</text>
+      </svg>
+    </div>
+    <div class="legend" style="margin-top:1rem">
+      <div class="legend-item"><div class="dot" style="background:#fbbf24"></div> Carry Chain (C₀→C₁→C₂)</div>
+      <div class="legend-item"><div class="dot" style="background:#ff4444"></div> Carry-out (Overflow)</div>
+      <div class="legend-item"><div class="dot" style="background:#c9d8e8"></div> Shuma S[3:0]</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 5: SIMULATOR ===== -->
+<div id="simulator" class="section content">
+
+  <!-- Half-Adder Sim -->
+  <div class="card">
+    <div class="card-title">Simulator — Half-Adder</div>
+    <div class="sim-grid">
+      <div class="input-group">
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--dim); letter-spacing:0.1em; margin-bottom:0.25rem">HYRJET</div>
+        <div class="bit-row">
+          <span class="bit-label">A =</span>
+          <button class="toggle-btn" id="ha-a-btn" onclick="toggleHA('a')"></button>
+          <span class="bit-val" id="ha-a-val" style="color:var(--dim)">0</span>
+        </div>
+        <div class="bit-row">
+          <span class="bit-label">B =</span>
+          <button class="toggle-btn" id="ha-b-btn" onclick="toggleHA('b')"></button>
+          <span class="bit-val" id="ha-b-val" style="color:var(--dim)">0</span>
+        </div>
+      </div>
+      <div class="output-display">
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--dim); letter-spacing:0.1em; margin-bottom:0.75rem">DALJET</div>
+        <div class="output-row">
+          <span class="out-label">S = A ⊕ B</span>
+          <span class="out-val inactive" id="ha-s">0</span>
+        </div>
+        <div class="output-row">
+          <span class="out-label">C = A · B</span>
+          <span class="out-val inactive" id="ha-c">0</span>
+        </div>
+        <div id="ha-note" class="highlight-row" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-Adder Sim -->
+  <div class="card">
+    <div class="card-title">Simulator — Full-Adder</div>
+    <div class="sim-grid">
+      <div class="input-group">
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--dim); letter-spacing:0.1em; margin-bottom:0.25rem">HYRJET</div>
+        <div class="bit-row">
+          <span class="bit-label">A =</span>
+          <button class="toggle-btn" id="fa-a-btn" onclick="toggleFA('a')"></button>
+          <span class="bit-val" id="fa-a-val" style="color:var(--dim)">0</span>
+        </div>
+        <div class="bit-row">
+          <span class="bit-label">B =</span>
+          <button class="toggle-btn" id="fa-b-btn" onclick="toggleFA('b')"></button>
+          <span class="bit-val" id="fa-b-val" style="color:var(--dim)">0</span>
+        </div>
+        <div class="bit-row">
+          <span class="bit-label">Cin =</span>
+          <button class="toggle-btn" id="fa-c-btn" onclick="toggleFA('cin')"></button>
+          <span class="bit-val" id="fa-cin-val" style="color:var(--dim)">0</span>
+        </div>
+      </div>
+      <div class="output-display">
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--dim); letter-spacing:0.1em; margin-bottom:0.75rem">DALJET</div>
+        <div class="output-row">
+          <span class="out-label">S = A⊕B⊕Cin</span>
+          <span class="out-val inactive" id="fa-s">0</span>
+        </div>
+        <div class="output-row">
+          <span class="out-label">Cout</span>
+          <span class="out-val inactive" id="fa-cout">0</span>
+        </div>
+        <div id="fa-note" class="highlight-row" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-bit Adder Sim -->
+  <div class="card">
+    <div class="card-title">Simulator — 4-bit Mbledhës Paralel</div>
+    <p style="font-size:0.8rem; color:var(--dim); margin-bottom:1.25rem; font-family:var(--mono)">Kliko bitat për të ndryshuar. Bit 3 = MSB, Bit 0 = LSB.</p>
+
+    <div style="display:flex; gap:2rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.5rem">
+      <!-- A input -->
+      <div class="nibble-group">
+        <div class="nibble-label">A [3..0]</div>
+        <div class="nibble-bits">
+          <button class="mini-toggle" id="a3" onclick="toggle4('a',3)">0</button>
+          <button class="mini-toggle" id="a2" onclick="toggle4('a',2)">0</button>
+          <button class="mini-toggle" id="a1" onclick="toggle4('a',1)">0</button>
+          <button class="mini-toggle" id="a0" onclick="toggle4('a',0)">0</button>
+        </div>
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--dim); text-align:center">
+          = <span id="a-dec">0</span><sub>10</sub>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; font-size:2rem; color:var(--dim); font-weight:300">+</div>
+
+      <!-- B input -->
+      <div class="nibble-group">
+        <div class="nibble-label">B [3..0]</div>
+        <div class="nibble-bits">
+          <button class="mini-toggle" id="b3" onclick="toggle4('b',3)">0</button>
+          <button class="mini-toggle" id="b2" onclick="toggle4('b',2)">0</button>
+          <button class="mini-toggle" id="b1" onclick="toggle4('b',1)">0</button>
+          <button class="mini-toggle" id="b0" onclick="toggle4('b',0)">0</button>
+        </div>
+        <div style="font-family:var(--mono); font-size:0.7rem; color:var(--dim); text-align:center">
+          = <span id="b-dec">0</span><sub>10</sub>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-display">
+      <div class="result-equation">
+        <span class="num" id="res-a">0000</span>
+        <span class="eq"> + </span>
+        <span class="num" id="res-b">0000</span>
+        <span class="eq"> = </span>
+        <span class="res" id="res-s">00000</span>
+      </div>
+      <div style="margin-top:0.5rem; font-family:var(--mono); font-size:0.8rem; color:var(--dim)">
+        <span id="res-decimal"></span>
+      </div>
+      <div id="overflow-badge" class="overflow-badge" style="display:none">⚠ OVERFLOW — Cout = 1</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tab switching
+  function showTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Half-Adder Simulator
+  const haState = { a: 0, b: 0 };
+  function toggleHA(bit) {
+    haState[bit] ^= 1;
+    const btn = document.getElementById('ha-' + bit + '-btn');
+    const val = document.getElementById('ha-' + (bit === 'a' ? 'a' : 'b') + '-val');
+    btn.classList.toggle('on', haState[bit] === 1);
+    val.textContent = haState[bit];
+    val.style.color = haState[bit] ? 'var(--accent3)' : 'var(--dim)';
+    updateHA();
+  }
+  function updateHA() {
+    const S = haState.a ^ haState.b;
+    const C = haState.a & haState.b;
+    const sEl = document.getElementById('ha-s');
+    const cEl = document.getElementById('ha-c');
+    sEl.textContent = S; sEl.className = 'out-val ' + (S ? 'active' : 'inactive');
+    cEl.textContent = C; cEl.className = 'out-val ' + (C ? 'active' : 'inactive');
+    const note = document.getElementById('ha-note');
+    if (haState.a && haState.b) {
+      note.style.display = 'block';
+      note.textContent = '1 + 1 = 10₂  →  Shuma=0, Bartje=1';
+    } else { note.style.display = 'none'; }
+  }
+
+  // Full-Adder Simulator
+  const faState = { a: 0, b: 0, cin: 0 };
+  function toggleFA(bit) {
+    faState[bit] ^= 1;
+    const btnIds = { a: 'fa-a-btn', b: 'fa-b-btn', cin: 'fa-c-btn' };
+    const valIds = { a: 'fa-a-val', b: 'fa-b-val', cin: 'fa-cin-val' };
+    document.getElementById(btnIds[bit]).classList.toggle('on', faState[bit] === 1);
+    document.getElementById(valIds[bit]).textContent = faState[bit];
+    document.getElementById(valIds[bit]).style.color = faState[bit] ? 'var(--accent3)' : 'var(--dim)';
+    updateFA();
+  }
+  function updateFA() {
+    const sum = faState.a + faState.b + faState.cin;
+    const S = sum % 2; const Cout = Math.floor(sum / 2);
+    const sEl = document.getElementById('fa-s');
+    const cEl = document.getElementById('fa-cout');
+    sEl.textContent = S; sEl.className = 'out-val ' + (S ? 'active' : 'inactive');
+    cEl.textContent = Cout; cEl.className = 'out-val ' + (Cout ? 'active' : 'inactive');
+    const note = document.getElementById('fa-note');
+    note.style.display = 'block';
+    note.textContent = `${faState.a} + ${faState.b} + ${faState.cin}(Cin) = ${sum} = ${Cout}${S}₂`;
+  }
+
+  // 4-bit Adder
+  const bits = { a: [0,0,0,0], b: [0,0,0,0] };
+  function toggle4(reg, pos) {
+    bits[reg][pos] ^= 1;
+    const btn = document.getElementById(reg + pos);
+    btn.textContent = bits[reg][pos];
+    btn.classList.toggle('on', bits[reg][pos] === 1);
+    update4bit();
+  }
+  function toBin(arr) { return arr[3]+''+ arr[2]+''+ arr[1]+''+ arr[0]; }
+  function toDec(arr) { return arr[0] + arr[1]*2 + arr[2]*4 + arr[3]*8; }
+  function update4bit() {
+    const A = toDec(bits.a); const B = toDec(bits.b);
+    const sum = A + B;
+    const S5 = sum.toString(2).padStart(5, '0');
+    document.getElementById('a-dec').textContent = A;
+    document.getElementById('b-dec').textContent = B;
+    document.getElementById('res-a').textContent = toBin(bits.a);
+    document.getElementById('res-b').textContent = toBin(bits.b);
+    document.getElementById('res-s').textContent = S5;
+    document.getElementById('res-decimal').textContent = `${A} + ${B} = ${sum} (decimal)`;
+    const overflow = sum > 15;
+    document.getElementById('overflow-badge').style.display = overflow ? 'inline-block' : 'none';
+  }
+  update4bit(); updateHA(); updateFA();
+</script>
+</body>
+</html>
